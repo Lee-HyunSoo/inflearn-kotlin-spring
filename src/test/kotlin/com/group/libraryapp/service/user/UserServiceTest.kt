@@ -7,18 +7,21 @@ import com.group.libraryapp.domain.user.loanhistory.UserLoanHistoryRepository
 import com.group.libraryapp.domain.user.loanhistory.UserLoanStatus
 import com.group.libraryapp.dto.user.request.UserCreateRequest
 import com.group.libraryapp.dto.user.request.UserUpdateRequest
+import com.group.libraryapp.util.TxHelper
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 class UserServiceTest @Autowired constructor(
     private val userRepository: UserRepository,
     private val userService: UserService,
     private val userLoanHistoryRepository: UserLoanHistoryRepository,
+    private val txHelper: TxHelper,
 ) {
 
     @AfterEach
@@ -163,5 +166,60 @@ class UserServiceTest @Autowired constructor(
 
         val userBResult = results.first { it.name == "B" }
         assertThat(userBResult.books).isEmpty()
+    }
+
+    @Test
+    @DisplayName("유저 1명과 책 2권을 저장하고 대출한다.")
+    @Transactional
+    fun tempTest() {
+        // when
+        userService.saveUserAndLoanTwoBooks()
+
+        // then
+        val users = userRepository.findAll()
+        assertThat(users).hasSize(1)
+        assertThat(users[0].userLoanHistories).hasSize(2)
+    }
+
+    @Test
+    @DisplayName("유저 1명과 책 2권을 저장하고 대출한다.")
+    fun tempTest2() {
+        // when
+        userService.saveUserAndLoanTwoBooks()
+
+        // then
+        val users = userRepository.findAll()
+        assertThat(users).hasSize(1)
+
+        val histories = userLoanHistoryRepository.findAll()
+        assertThat(histories).hasSize(2)
+        assertThat(histories[0].user.id).isEqualTo(users[0].id)
+    }
+
+    @Test
+    @DisplayName("유저 1명과 책 2권을 저장하고 대출한다.")
+    fun tempTest3() {
+        // when
+        userService.saveUserAndLoanTwoBooks()
+
+        // then
+        val users = userRepository.findAllWithHistories()
+        assertThat(users).hasSize(1)
+        assertThat(users[0].userLoanHistories).hasSize(2)
+    }
+
+    @Test
+    @DisplayName("유저 1명과 책 2권을 저장하고 대출한다.")
+    fun tempTest4() {
+        // when
+        userService.saveUserAndLoanTwoBooks()
+
+        // then
+        // txHelper 내에는 @Transactional 이 존재 한다.
+        txHelper.exec {
+            val users = userRepository.findAllWithHistories()
+            assertThat(users).hasSize(1)
+            assertThat(users[0].userLoanHistories).hasSize(2)
+        }
     }
 }

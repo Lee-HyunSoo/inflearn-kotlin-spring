@@ -34,7 +34,7 @@ public class QUserLoanHistory extends EntityPathBase<UserLoanHistory> {
         this(UserLoanHistory.class, forVariable(variable), INITS);
     }
 
-    public QUserLoanHistory(Path<UserLoanHistory> path) {
+    public QUserLoanHistory(Path<? extends UserLoanHistory> path) {
         this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
